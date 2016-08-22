@@ -7,7 +7,9 @@ import (
 	"time"
 )
 
-var templates = template.Must(template.ParseGlob("pages/templates/*.tmpl"))
+var pages = make(map[string]func(string))
+
+var templates = template.Must(template.ParseGlob("templates/*/*.tmpl"))
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p interface{}) {
 	err := templates.ExecuteTemplate(w, tmpl+".tmpl", p)
@@ -62,6 +64,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		style,
 	}
 
+	for pageName, pageFunc := range pages {
+		if pageName == path {
+			pageFunc(pageName)
+		}
+	}
+
 	renderTemplate(w, path, data)
 }
 
@@ -72,6 +80,8 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 }
 
 func main() {
+	RegisterPages()
+
 	http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
