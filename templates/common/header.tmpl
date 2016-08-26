@@ -9,8 +9,10 @@
     <title>{{ .Title }}</title>
     <meta name="description" content="Webpage from Go">
     <!-- Bootstrap -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    {{if ne .Style "bootstrap"}}
     <link href="/static/css/{{.Style}}.min.css" rel="stylesheet">
+    {{end}}
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->

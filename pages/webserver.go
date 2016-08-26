@@ -34,7 +34,13 @@ func updateCookie(w http.ResponseWriter, Name string, Value string) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var path = r.URL.Path[1:]
+	var path string
+
+	if len(r.URL.Path) > 1 {
+		path = r.URL.Path[1:]
+	} else {
+		path = "home"
+	}
 	if path[len(path)-1] == '/' {
 		path = path[:len(path)-1]
 	}
@@ -54,20 +60,30 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	found := false
+
+	title := "Go Website"
+
+	for pageName, pageFunc := range pages {
+		if pageName == path {
+			pageFunc(pageName)
+			found = true
+		}
+	}
+
+	if !found {
+		path = "notFound"
+		title = "404 Not Found"
+	}
+
 	data := struct {
 		Page  string
 		Title string
 		Style string
 	}{
 		path,
-		"Go Website",
+		title,
 		style,
-	}
-
-	for pageName, pageFunc := range pages {
-		if pageName == path {
-			pageFunc(pageName)
-		}
 	}
 
 	renderTemplate(w, path, data)

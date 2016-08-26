@@ -8,6 +8,16 @@ func RegisterPages() {
 	pages["test"] = TestPage
 	pages["test2"] = Test2Page
 	pages["settings"] = SettingsPage
+	pages["home"] = HomePage
+	pages["notFound"] = NotFound
+}
+
+func HomePage(page string) {
+	fmt.Printf("Welcome Home!\n")
+}
+
+func NotFound(page string) {
+	fmt.Printf("Welcome Home!\n")
 }
 
 func SettingsPage(page string) {

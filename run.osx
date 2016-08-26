@@ -1,4 +1,4 @@
 
-open "http://localhost:8080/test"
+open "http://localhost:8080/"
 
 bin/webserver

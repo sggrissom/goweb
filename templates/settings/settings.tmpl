@@ -13,19 +13,19 @@
 	<div class="btn-group btn-group-justified" role="group" aria-label="...">
 	  <div class="btn-group" role="group">
 	    <button type="submit"
-		    class="btn btn-default"
+		    class="btn btn-default {{if eq .Style "flatly"}} active {{end}}"
 		    name="button"
 		    value="flatly">flatly</button>
 	  </div>
 	  <div class="btn-group" role="group">
 	    <button type="submit"
-		    class="btn btn-default"
+		    class="btn btn-default {{if eq .Style "journal"}} active {{end}}"
 		    name="button"
 		    value="journal">journal</button>
 	  </div>
 	  <div class="btn-group" role="group">
 	    <button type="submit"
-		    class="btn btn-default"
+		    class="btn btn-default {{if eq .Style "bootstrap"}} active {{end}}"
 		    name="button"
 		    value="bootstrap">default</button>
 	  </div>
