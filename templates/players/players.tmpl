@@ -1,0 +1,23 @@
+
+{{ template "header.tmpl" . }}
+{{ template "nav.tmpl" . }}
+
+<div class="well well-lg">
+<input type="text" id="searchFilter" onkeyup="filterTable()" placeholder="Search for names..">
+  <table id="playerTable" class="table">
+    <thead>
+      <tr>
+	<th>Name</th>
+	<th>Games Played</th>
+	</tr>
+      </thead>
+    {{ range $player := .PageData.players }}
+    <tr>
+    <td>{{ $player.First }} {{$player.Last}}</td>
+    <td>{{ $player.GamesPlayed }}</td>
+    </tr>
+    {{ end }}
+  </table>
+</div>
+
+{{ template "footer.tmpl" . }}

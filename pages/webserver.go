@@ -1,36 +1,26 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"net/http"
 	"time"
+	"io/ioutil"
 )
 
-var pages = make(map[string]func(string))
-
+var pages []page
 var templates = template.Must(template.ParseGlob("templates/*/*.tmpl"))
 
-func renderTemplate(w http.ResponseWriter, tmpl string, p interface{}) {
-	err := templates.ExecuteTemplate(w, tmpl+".tmpl", p)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func updateCookie(w http.ResponseWriter, Name string, Value string) {
-	expiration := time.Now().Add(365 * 24 * time.Hour)
-
-	cookie := http.Cookie{
-		Name:     Name,
-		Value:    Value,
-		Expires:  expiration,
-		HttpOnly: false,
-		Path:     "/",
+func getPageObject(path string) page {
+	for _, page := range pages {
+		if page.Path == path {
+			return page
+		}
 	}
 
-	http.SetCookie(w, &cookie)
+	return page{Path: "notFound", Title: "404 not found"}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -60,30 +50,35 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	found := false
+	Page := getPageObject(path)
 
-	title := "Go Website"
-
-	for pageName, pageFunc := range pages {
-		if pageName == path {
-			pageFunc(pageName)
-			found = true
-		}
+	if len(Page.Title) == 0 {
+		Page.Title = "Go Website"
 	}
 
-	if !found {
-		path = "notFound"
-		title = "404 Not Found"
+	var pageData map[string]interface{}
+	if Page.DataFn != nil {
+		pageData = Page.DataFn()
 	}
 
 	data := struct {
-		Page  string
-		Title string
-		Style string
+		Page     string
+		Title    string
+		Style    string
+		JS       []string
+		Nav      []page
+		PageData map[string]interface{}
 	}{
-		path,
-		title,
+		Page.Path,
+		Page.Title,
 		style,
+		Page.JS,
+		pages,
+		pageData,
+	}
+
+	if len(Page.Template) > 0 {
+		path = Page.Template
 	}
 
 	renderTemplate(w, path, data)
@@ -95,7 +90,78 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	}
 }
 
+func renderTemplate(w http.ResponseWriter, tmpl string, p interface{}) {
+	err := templates.ExecuteTemplate(w, tmpl+".tmpl", p)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func updateCookie(w http.ResponseWriter, Name string, Value string) {
+	expiration := time.Now().Add(365 * 24 * time.Hour)
+
+	cookie := http.Cookie{
+		Name:     Name,
+		Value:    Value,
+		Expires:  expiration,
+		HttpOnly: false,
+		Path:     "/",
+	}
+
+	http.SetCookie(w, &cookie)
+}
+
+func query(db *sql.DB) {
+	var (
+		id    int
+		first string
+		last  string
+	)
+	rows, err := db.Query("select * from players")
+	if err != nil {
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&id, &first, &last)
+		if err != nil {
+		}
+
+		fmt.Printf("%d. %s %s", id, first, last)
+	}
+	err = rows.Err()
+	if err != nil {
+	}
+}
+
 func main() {
+
+	password, err := ioutil.ReadFile("password.txt")
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+	
+	fmt.Printf("thing: %s\n", password)
+
+	dbConnectionString := fmt.Sprintf("website:%s@tcp(steven.db:3306)/ball", password)
+
+	db, err := sql.Open("mysql", dbConnectionString)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Printf("thing\n")
+		fmt.Printf("Error: %s\n", err.Error())
+		return
+	}
+
+	query(db)
+
 	RegisterPages()
 
 	http.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {

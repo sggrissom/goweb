@@ -3,5 +3,6 @@ if [ ! -d "bin" ]; then
    mkdir bin
 fi
 cd bin
+go generate ../pages/*.go
 go build -o webserver ../pages/*.go
 cd ..
