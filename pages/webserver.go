@@ -141,11 +141,13 @@ func main() {
 		fmt.Printf("Error: %s\n", err.Error())
 		return
 	}
+	password = password[:len(password)-1]
 	
-	fmt.Printf("thing: %s\n", password)
+	fmt.Printf("password: %s\n", password)
 
 	dbConnectionString := fmt.Sprintf("website:%s@tcp(steven.db:3306)/ball", password)
 
+	fmt.Printf("connectionString: %s\n", dbConnectionString)
 	db, err := sql.Open("mysql", dbConnectionString)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
@@ -153,12 +155,14 @@ func main() {
 	}
 	defer db.Close()
 
+		fmt.Printf("before ping\n")
 	err = db.Ping()
+		fmt.Printf("pinged\n")
 	if err != nil {
-		fmt.Printf("thing\n")
 		fmt.Printf("Error: %s\n", err.Error())
 		return
 	}
+		fmt.Printf("success!!!!\n")
 
 	query(db)
 
